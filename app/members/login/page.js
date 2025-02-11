@@ -5,16 +5,13 @@ import { useRouter } from 'next/navigation';
 import { TextField, Button, Box, Typography, Container, Alert } from '@mui/material';
 import axios from 'axios';
 
-const SignupPage = () => {
+const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
   });
 
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -28,62 +25,45 @@ const SignupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess(false);
 
-    const { email, password, confirmPassword } = formData;
+    const { email, password } = formData;
 
-    if (!email || !password || !confirmPassword) {
-      setError('모든 필드를 입력해주세요.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('비밀번호 확인이 일치하지 않습니다.');
+    if (!email || !password) {
+      setError('이메일과 비밀번호를 모두 입력해주세요.');
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:8080/members/create', {
+      const response = await axios.post('http://localhost:8080/members/login', {
         email,
         password,
       });
 
-      if (response.status === 200) {
-        setSuccess(true);
-        setFormData({
-          email: '',
-          password: '',
-          confirmPassword: '',
-        });
+      if (response.status === 200 && response.data.token) {
+        localStorage.setItem('jwt-token', response.data.token);
+
+        router.push('/');
+      } else {
+        setError('로그인에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
       if (error.response && error.response.data) {
-        setError(error.response.data.message || '회원가입에 실패했습니다.');
+        setError(error.response.data.message || '로그인에 실패했습니다.');
       } else {
-        setError('회원가입 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        setError('로그인 과정에서 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
       }
     }
-  };
-
-  const handleHome = () => {
-    router.push('/');
   };
 
   return (
     <Container maxWidth="sm" sx={{ mt: 5 }}>
       <Typography variant="h4" component="h1" gutterBottom align="center">
-        회원가입
+        로그인
       </Typography>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
-        </Alert>
-      )}
-
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          회원가입에 성공했습니다!
         </Alert>
       )}
 
@@ -108,16 +88,6 @@ const SignupPage = () => {
           margin="normal"
           required
         />
-        <TextField
-          fullWidth
-          label="비밀번호 확인"
-          name="confirmPassword"
-          type="password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          margin="normal"
-          required
-        />
         <Box
           sx={{
             display: 'flex',
@@ -129,7 +99,7 @@ const SignupPage = () => {
             type="button"
             variant="outlined"
             color="secondary"
-            onClick={handleHome}
+            onClick={() => router.push('/')}
             sx={{ flex: 1, mr: 1 }}
           >
             홈으로
@@ -140,7 +110,7 @@ const SignupPage = () => {
             color="primary"
             sx={{ flex: 1, ml: 1 }}
           >
-            회원가입
+            로그인
           </Button>
         </Box>
       </Box>
@@ -148,4 +118,4 @@ const SignupPage = () => {
   );
 };
 
-export default SignupPage;
+export default LoginPage;
