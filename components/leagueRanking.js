@@ -27,6 +27,33 @@ const LeagueRanking = ({ data }) => {
     }
   };
 
+  // 최근 경기 폼 렌더링
+  const renderRecentForm = (form) => {
+    if (!form) return null; // form 값이 없으면 아무것도 표시하지 않음
+
+    return (
+      <Box display="flex" gap={0.5}>
+        {form.split('').map((result, index) => {
+          let color = 'gray'; // 기본: 무승부 (D)
+          if (result === 'W') color = 'green'; // 승리
+          if (result === 'L') color = 'red'; // 패배
+
+          return (
+            <Typography
+              key={index}
+              style={{
+                color: color,
+                fontWeight: 'bold', // 폰트 굵게
+              }}
+            >
+              {result}
+            </Typography>
+          );
+        })}
+      </Box>
+    );
+  };
+
   return (
     <Box p={2}>
       {/* 리그 기본 정보 표시 */}
@@ -77,7 +104,10 @@ const LeagueRanking = ({ data }) => {
                 <TableCell>{team.lose}</TableCell>
                 <TableCell>{team.goalsDiff}</TableCell>
                 <TableCell>{team.points}</TableCell>
-                <TableCell>{team.form}</TableCell>
+                <TableCell>
+                  {/* 최근 경기 폼 표시 */}
+                  {renderRecentForm(team.form)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
