@@ -19,7 +19,20 @@ const InPlayContainer = () => {
 
       try {
         const response = await axios.post("http://localhost:8082/matches/fixture/in-play");
-        setInPlayData(response.data.response || []);
+        const leagues = response.data.response || [];
+
+        // 진행 중인 경기가 있는 리그의 첫 번째 인덱스를 찾음
+        const indexWithInPlayMatches = leagues.findIndex((league) => league.fixtures && league.fixtures.length > 0);
+
+        // 진행 중인 경기가 있는 리그가 있으면 해당 리그를 기본 활성화
+        if (indexWithInPlayMatches !== -1) {
+          setSelectedLeagueIndex(indexWithInPlayMatches);
+        } else {
+          // 없으면 첫 번째 리그를 활성화
+          setSelectedLeagueIndex(0);
+        }
+
+        setInPlayData(leagues);
       } catch (err) {
         console.error("진행 중인 경기를 불러오는 중 에러 발생:", err);
         setError("데이터를 불러오는 중 오류가 발생했습니다.");
