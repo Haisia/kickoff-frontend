@@ -3,18 +3,9 @@ import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead
 
 // UTC 시간 데이터를 한국 시간으로 변환하는 함수
 const convertToKoreanTime = (dateString, dateTimeZone) => {
-  // dateString은 ISO 형식의 날짜 (`fixtureDateTime.date`)로 제공됨
   const utcDate = new Date(dateString);
-
-  // 브라우저 또는 환경이 타임존을 이해하지 못하는 경우 기본 UTC 시간 변환
-  if (dateTimeZone !== "UTC") {
-    console.warn(`Unhandled timezone format: ${dateTimeZone}`);
-  }
-
-  // KST(한국 표준 시간) 변환 (UTC+9)
-  const koreanTimeOffset = 9 * 60; // 9시간을 분 단위로 변경
+  const koreanTimeOffset = 9 * 60; // UTC+9
   const koreanTime = new Date(utcDate.getTime() + koreanTimeOffset * 60 * 1000);
-
   return koreanTime.toLocaleString("ko-KR", {
     year: "numeric",
     month: "2-digit",
@@ -22,6 +13,17 @@ const convertToKoreanTime = (dateString, dateTimeZone) => {
     hour: "2-digit",
     minute: "2-digit",
   });
+};
+
+// 승자를 표시하는 함수 (✅ 이모지 추가)
+const getHighlightedTeam = (homeScore, awayScore, homeTeamName, awayTeamName) => {
+  if (homeScore > awayScore) {
+    return { home: `${homeTeamName} ✅`, away: awayTeamName };
+  } else if (awayScore > homeScore) {
+    return { home: homeTeamName, away: `${awayTeamName} ✅` };
+  } else {
+    return { home: homeTeamName, away: awayTeamName }; // 무승부일 경우
+  }
 };
 
 const Schedule = ({ data }) => {
@@ -58,65 +60,66 @@ const Schedule = ({ data }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedFixtures.map((fixture) => (
-              <TableRow key={fixture.id}>
-                {/* 날짜/시간 */}
-                <TableCell>
-                  {convertToKoreanTime(
-                    fixture.fixtureDateTime.date,
-                    fixture.fixtureDateTime.dateTimeZone
-                  )}
-                </TableCell>
+            {sortedFixtures.map((fixture) => {
+              const { homeTeam, awayTeam, fullTimeScore } = fixture;
 
-                {/* 경기장 */}
-                <TableCell>
-                  <Typography>{fixture.venue?.name || "정보 없음"}</Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    {fixture.venue?.city || ""}
-                  </Typography>
-                </TableCell>
+              // 승자 강조를 위한 텍스트 생성
+              const { home, away } = getHighlightedTeam(
+                fullTimeScore?.home,
+                fullTimeScore?.away,
+                homeTeam?.name || "정보 없음",
+                awayTeam?.name || "정보 없음"
+              );
 
-                {/* 홈팀 */}
-                <TableCell>
-                  <Box display="flex" alignItems="center">
-                    <Avatar
-                      src={fixture.homeTeam?.logo || ""}
-                      alt={fixture.homeTeam?.name || "홈팀"}
-                      sx={{ width: 24, height: 24, mr: 1 }}
-                    />
-                    <Typography>
-                      {fixture.homeTeam?.name || "정보 없음"}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary" ml={1}>
-                      ({fixture.homeTeam?.code || ""})
-                    </Typography>
-                  </Box>
-                </TableCell>
+              return (
+                <TableRow key={fixture.id}>
+                  {/* 날짜/시간 */}
+                  <TableCell>
+                    {convertToKoreanTime(
+                      fixture.fixtureDateTime.date,
+                      fixture.fixtureDateTime.dateTimeZone
+                    )}
+                  </TableCell>
 
-                {/* 원정팀 */}
-                <TableCell>
-                  <Box display="flex" alignItems="center">
-                    <Avatar
-                      src={fixture.awayTeam?.logo || ""}
-                      alt={fixture.awayTeam?.name || "원정팀"}
-                      sx={{ width: 24, height: 24, mr: 1 }}
-                    />
-                    <Typography>
-                      {fixture.awayTeam?.name || "정보 없음"}
+                  {/* 경기장 */}
+                  <TableCell>
+                    <Typography>{fixture.venue?.name || "정보 없음"}</Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {fixture.venue?.city || ""}
                     </Typography>
-                    <Typography variant="body2" color="textSecondary" ml={1}>
-                      ({fixture.awayTeam?.code || ""})
-                    </Typography>
-                  </Box>
-                </TableCell>
+                  </TableCell>
 
-                {/* 경기 결과 */}
-                <TableCell>
-                  {fixture.fullTimeScore?.home ?? "-"} -{" "}
-                  {fixture.fullTimeScore?.away ?? "-"}
-                </TableCell>
-              </TableRow>
-            ))}
+                  {/* 홈팀 */}
+                  <TableCell>
+                    <Box display="flex" alignItems="center">
+                      <Avatar
+                        src={homeTeam?.logo || ""}
+                        alt={homeTeam?.name || "홈팀"}
+                        sx={{ width: 24, height: 24, mr: 1 }}
+                      />
+                      <Typography>{home}</Typography>
+                    </Box>
+                  </TableCell>
+
+                  {/* 원정팀 */}
+                  <TableCell>
+                    <Box display="flex" alignItems="center">
+                      <Avatar
+                        src={awayTeam?.logo || ""}
+                        alt={awayTeam?.name || "원정팀"}
+                        sx={{ width: 24, height: 24, mr: 1 }}
+                      />
+                      <Typography>{away}</Typography>
+                    </Box>
+                  </TableCell>
+
+                  {/* 경기 결과 */}
+                  <TableCell>
+                    {fullTimeScore?.home ?? "-"} - {fullTimeScore?.away ?? "-"}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
