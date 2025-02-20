@@ -8,6 +8,7 @@ import styles from "./page.module.css";
 import { Button } from "@mui/material";
 import LeagueRankingContainer from "@/components/leagueRankingContainer";
 import ScheduleContainer from "@/components/scheduleContainer";
+import InPlayContainer from "@/components/inPlayContainer";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
@@ -56,6 +57,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        <InPlayContainer></InPlayContainer>
         <ScheduleContainer></ScheduleContainer>
         <LeagueRankingContainer></LeagueRankingContainer>
         <Image
