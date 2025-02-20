@@ -1,5 +1,8 @@
 import React from 'react';
 import { Box, Typography, Avatar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'; // 초록색 상승 화살표
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // 붉은색 하락 화살표
+import RemoveIcon from '@mui/icons-material/Remove'; // 회색 `-` 표시
 
 // 데이터를 props로 받아 테이블로 출력하는 컴포넌트
 const LeagueRanking = ({ data }) => {
@@ -9,6 +12,20 @@ const LeagueRanking = ({ data }) => {
 
   // "teams" 데이터 접근을 위한 상위 데이터 구조
   const leagueData = data[0]; // 첫 번째 리그 데이터
+
+  // 순위 변화 상태를 나타내는 아이콘 컴포넌트
+  const renderRankStatusIcon = (rankStatus) => {
+    switch (rankStatus) {
+      case 'UP':
+        return <ExpandLessIcon style={{ color: 'green' }} />;
+      case 'DOWN':
+        return <ExpandMoreIcon style={{ color: 'red' }} />;
+      case 'SAME':
+        return <RemoveIcon style={{ color: 'gray' }} />;
+      default:
+        return null; // rankStatus가 없을 경우 아무것도 표시하지 않음
+    }
+  };
 
   return (
     <Box p={2}>
@@ -41,7 +58,15 @@ const LeagueRanking = ({ data }) => {
             {/* 팀 데이터 순회 */}
             {leagueData.teams.map((team) => (
               <TableRow key={team.id}>
-                <TableCell>{team.rank}</TableCell>
+                <TableCell>
+                  {/* 순위 숫자와 rankStatus 아이콘 표시 */}
+                  <Box display="flex" alignItems="center">
+                    <Typography variant="body1" style={{ marginRight: 4 }}>
+                      {team.rank}
+                    </Typography>
+                    {renderRankStatusIcon(team.rankStatus)}
+                  </Box>
+                </TableCell>
                 <TableCell>
                   <Avatar src={team.logo} alt={team.code} />
                 </TableCell>
