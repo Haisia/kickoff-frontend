@@ -86,6 +86,13 @@ const FixtureDetail = () => {
   // fullTimeScore 기본값 처리
   const fullTimeScore = fixture.fullTimeScore || { home: "-", away: "-" };
 
+  // WDL 색상 스타일 정의 (W: 초록색, D: 회색, L: 붉은색)
+  const getResultStyle = (result) => {
+    if (result === "W") return { color: "#006400", fontWeight: "bold" }; // 진한 초록색
+    if (result === "D") return { color: "#808080", fontWeight: "bold" }; // 회색
+    if (result === "L") return { color: "#FF0000", fontWeight: "bold" }; // 붉은색
+  };
+
   return (
     <div
       style={{
@@ -192,32 +199,74 @@ const FixtureDetail = () => {
           <thead>
             <tr>
               <th style={{ border: "1px solid #ddd", padding: "8px" }}>날짜</th>
-              <th style={{ border: "1px solid #ddd", padding: "8px" }}>장소</th>
-              <th style={{ border: "1px solid #ddd", padding: "8px" }}>홈팀</th>
-              <th style={{ border: "1px solid #ddd", padding: "8px" }}>원정팀</th>
-              <th style={{ border: "1px solid #ddd", padding: "8px" }}>결과</th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {fixture.homeTeam?.name || "홈팀"}
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {fixture.awayTeam?.name || "원정팀"}
+              </th>
+              <th style={{ border: "1px solid #ddd", padding: "8px" }}>경기장</th>
             </tr>
           </thead>
           <tbody>
-            {headToHeadData.map((h2h) => (
-              <tr key={h2h.id}>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {new Date(h2h.fixtureDateTime.date).toLocaleDateString("ko-KR")}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {h2h.venue?.name || "정보 없음"}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {h2h.homeTeam?.name || "정보 없음"}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {h2h.awayTeam?.name || "정보 없음"}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {h2h.fullTimeScore?.home ?? "-"} - {h2h.fullTimeScore?.away ?? "-"}
-                </td>
-              </tr>
-            ))}
+            {headToHeadData.map((h2h, index) => {
+              const homeScore = h2h.fullTimeScore?.home ?? "-";
+              const awayScore = h2h.fullTimeScore?.away ?? "-";
+
+              // 팀 ID 가져오기
+              const teamAId = fixture.homeTeam.id; // teamA ID (고정된 첫 번째 팀)
+              const teamBId = fixture.awayTeam.id; // teamB ID (고정된 두 번째 팀)
+
+              // 홈/원정 여부 판단
+              const isTeamAHome = h2h.homeTeam.id === teamAId;
+              const isTeamBHome = h2h.homeTeam.id === teamBId;
+
+              // 결과 계산
+              const teamAResult = isTeamAHome
+                ? homeScore > awayScore
+                  ? "W"
+                  : homeScore < awayScore
+                    ? "L"
+                    : "D"
+                : awayScore > homeScore
+                  ? "W"
+                  : awayScore < homeScore
+                    ? "L"
+                    : "D";
+
+              const teamBResult = isTeamBHome
+                ? homeScore > awayScore
+                  ? "W"
+                  : homeScore < awayScore
+                    ? "L"
+                    : "D"
+                : awayScore > homeScore
+                  ? "W"
+                  : awayScore < homeScore
+                    ? "L"
+                    : "D";
+
+              return (
+                <tr key={h2h.fixtureId || `row-${index}`}>
+                  <td style={{border: "1px solid #ddd", padding: "8px"}}>
+                    {new Date(h2h.fixtureDateTime.date).toLocaleDateString("ko-KR")}
+                  </td>
+                  <td style={{border: "1px solid #ddd", padding: "8px"}}>
+                    {/* teamA (고정) */}
+                    {isTeamAHome ? "홈" : "원정"} {homeScore}&nbsp;
+                    <span style={getResultStyle(teamAResult)}>{teamAResult}</span>
+                  </td>
+                  <td style={{border: "1px solid #ddd", padding: "8px"}}>
+                    {/* teamB (고정) */}
+                    {isTeamBHome ? "홈" : "원정"} {awayScore}&nbsp;
+                    <span style={getResultStyle(teamBResult)}>{teamBResult}</span>
+                  </td>
+                  <td style={{border: "1px solid #ddd", padding: "8px"}}>
+                    {h2h.venue?.name || "정보 없음"}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       ) : (
