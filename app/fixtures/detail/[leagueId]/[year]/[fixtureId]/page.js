@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import CommentSection from "@/components/CommentSection";
 
 async function fetchFixtureDetail(leagueId, year, fixtureId) {
   const response = await fetch(`http://localhost:8082/matches/fixture/get`, {
@@ -12,8 +13,8 @@ async function fetchFixtureDetail(leagueId, year, fixtureId) {
     body: JSON.stringify({
       leagueId,
       year,
-      fixtureId
-    }), // 요청 본문에 `LeagueFixtureQuery` 데이터를 포함
+      fixtureId,
+    }),
   });
 
   if (!response.ok) {
@@ -21,7 +22,7 @@ async function fetchFixtureDetail(leagueId, year, fixtureId) {
   }
 
   const data = await response.json();
-  return data.response[0]; // 첫 번째 경기 데이터 반환
+  return data.response[0];
 }
 
 async function fetchHeadToHead(leagueId, year, fixtureId) {
@@ -35,7 +36,7 @@ async function fetchHeadToHead(leagueId, year, fixtureId) {
       body: JSON.stringify({
         leagueId,
         year,
-        fixtureId
+        fixtureId,
       }),
     }
   );
@@ -45,11 +46,11 @@ async function fetchHeadToHead(leagueId, year, fixtureId) {
   }
 
   const data = await response.json();
-  return data.response; // Head-to-Head 데이터 반환
+  return data.response;
 }
 
 const FixtureDetail = () => {
-  const { leagueId, year, fixtureId } = useParams(); // 동적 라우팅에서 leagueId, year, fixtureId 가져오기
+  const { leagueId, year, fixtureId } = useParams(); // 동적 라우팅으로 데이터 가져오기
   const [fixture, setFixture] = useState(null);
   const [headToHeadData, setHeadToHeadData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,10 +64,7 @@ const FixtureDetail = () => {
         const fixtureData = await fetchFixtureDetail(leagueId, year, fixtureId);
         setFixture(fixtureData);
 
-        // Head-to-Head 정보 가져오기
         const h2hData = await fetchHeadToHead(leagueId, year, fixtureId);
-
-        // 정렬: 날짜 기준으로 오름차순 (가장 오래된 경기 순으로)
         const sortedH2hData = h2hData.sort((a, b) => {
           return new Date(a.fixtureDateTime.date) - new Date(b.fixtureDateTime.date);
         });
@@ -86,15 +84,7 @@ const FixtureDetail = () => {
   if (error) return <p>데이터를 가져오는 중 오류가 발생했습니다: {error}</p>;
   if (!fixture) return <p>경기 데이터를 찾을 수 없습니다.</p>;
 
-  // fullTimeScore 기본값 처리
   const fullTimeScore = fixture.fullTimeScore || { home: "-", away: "-" };
-
-  // WDL 색상 스타일 정의 (W: 초록색, D: 회색, L: 붉은색)
-  const getResultStyle = (result) => {
-    if (result === "W") return { color: "#006400", fontWeight: "bold" }; // 진한 초록색
-    if (result === "D") return { color: "#808080", fontWeight: "bold" }; // 회색
-    if (result === "L") return { color: "#FF0000", fontWeight: "bold" }; // 붉은색
-  };
 
   return (
     <div
@@ -109,13 +99,7 @@ const FixtureDetail = () => {
         fontFamily: "Arial",
       }}
     >
-      <h1
-        style={{
-          fontSize: "32px",
-          marginBottom: "40px",
-          textAlign: "center",
-        }}
-      >
+      <h1 style={{ fontSize: "32px", marginBottom: "40px", textAlign: "center" }}>
         경기 상세 정보
       </h1>
       <div style={{ marginTop: "40px" }}>
@@ -154,23 +138,11 @@ const FixtureDetail = () => {
             }}
           />
           <h3>{fixture.homeTeam?.name || "홈팀"}</h3>
-          <p>{fixture.homeTeam?.code || ""}</p>
         </div>
 
-        <div
-          style={{
-            textAlign: "center",
-            marginLeft: "50px",
-            marginRight: "50px",
-          }}
-        >
+        <div style={{ textAlign: "center", marginLeft: "50px", marginRight: "50px" }}>
           <h2>VS</h2>
-          <div
-            style={{
-              fontSize: "64px",
-              fontWeight: "bold",
-            }}
-          >
+          <div style={{ fontSize: "64px", fontWeight: "bold" }}>
             {fullTimeScore?.home ?? "-"} - {fullTimeScore?.away ?? "-"}
           </div>
         </div>
@@ -186,7 +158,6 @@ const FixtureDetail = () => {
             }}
           />
           <h3>{fixture.awayTeam?.name || "원정팀"}</h3>
-          <p>{fixture.awayTeam?.code || ""}</p>
         </div>
       </div>
 
@@ -233,6 +204,9 @@ const FixtureDetail = () => {
       ) : (
         <p>Head-to-Head 데이터를 찾을 수 없습니다.</p>
       )}
+
+      {/* 댓글 작성 섹션 추가 */}
+      <CommentSection leagueId={leagueId} year={year} fixtureId={fixtureId} />
     </div>
   );
 };
