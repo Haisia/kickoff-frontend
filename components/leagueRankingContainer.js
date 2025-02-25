@@ -19,7 +19,7 @@ const LeagueRankingContainer = () => {
 
       try {
         // API 요청
-        const response = await axios.post('http://localhost:8082/matches/league/rank/main');
+        const response = await axios.post('http://localhost:8082/matches/league/rank/main/list');
 
         // 응답 데이터 상태에 저장
         setLeagueData(response.data.response || []);

@@ -18,7 +18,7 @@ const InPlayContainer = () => {
       setError(null);
 
       try {
-        const response = await axios.post("http://localhost:8082/matches/fixture/in-play");
+        const response = await axios.post("http://localhost:8082/matches/fixture/in-play/list");
         const leagues = response.data.response || [];
 
         // 진행 중인 경기가 있는 리그의 첫 번째 인덱스를 찾음

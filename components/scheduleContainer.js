@@ -19,7 +19,7 @@ const ScheduleContainer = () => {
 
       try {
         // API 요청
-        const response = await axios.post("http://localhost:8082/matches/fixture/main");
+        const response = await axios.post("http://localhost:8082/matches/fixture/main/list");
 
         // 응답 데이터를 상태에 저장
         setScheduleData(response.data.response || []);

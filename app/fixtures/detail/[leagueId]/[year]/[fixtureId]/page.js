@@ -3,16 +3,18 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-async function fetchFixtureDetail(fixtureId) {
-  const response = await fetch(
-    `http://localhost:8082/matches/fixture/${fixtureId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+async function fetchFixtureDetail(leagueId, year, fixtureId) {
+  const response = await fetch(`http://localhost:8082/matches/fixture/get`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      leagueId,
+      year,
+      fixtureId
+    }), // 요청 본문에 `LeagueFixtureQuery` 데이터를 포함
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch fixture details");
@@ -22,15 +24,19 @@ async function fetchFixtureDetail(fixtureId) {
   return data.response[0]; // 첫 번째 경기 데이터 반환
 }
 
-async function fetchHeadToHead(homeTeamId, awayTeamId) {
+async function fetchHeadToHead(leagueId, year, fixtureId) {
   const response = await fetch(
-    `http://localhost:8082/matches/team/head-to-head/simple`,
+    `http://localhost:8082/matches/fixture/head-to-head/simple/list`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ teamIds: [homeTeamId, awayTeamId] }),
+      body: JSON.stringify({
+        leagueId,
+        year,
+        fixtureId
+      }),
     }
   );
 
@@ -43,25 +49,22 @@ async function fetchHeadToHead(homeTeamId, awayTeamId) {
 }
 
 const FixtureDetail = () => {
-  const { fixtureId } = useParams(); // 동적 라우팅에서 fixtureId 가져오기
+  const { leagueId, year, fixtureId } = useParams(); // 동적 라우팅에서 leagueId, year, fixtureId 가져오기
   const [fixture, setFixture] = useState(null);
   const [headToHeadData, setHeadToHeadData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!fixtureId) return;
+    if (!leagueId || !year || !fixtureId) return;
 
     const getFixtureData = async () => {
       try {
-        const fixtureData = await fetchFixtureDetail(fixtureId);
+        const fixtureData = await fetchFixtureDetail(leagueId, year, fixtureId);
         setFixture(fixtureData);
 
         // Head-to-Head 정보 가져오기
-        const h2hData = await fetchHeadToHead(
-          fixtureData.homeTeam.id,
-          fixtureData.awayTeam.id
-        );
+        const h2hData = await fetchHeadToHead(leagueId, year, fixtureId);
 
         // 정렬: 날짜 기준으로 오름차순 (가장 오래된 경기 순으로)
         const sortedH2hData = h2hData.sort((a, b) => {
@@ -77,7 +80,7 @@ const FixtureDetail = () => {
     };
 
     getFixtureData();
-  }, [fixtureId]);
+  }, [leagueId, year, fixtureId]);
 
   if (loading) return <p>로딩 중...</p>;
   if (error) return <p>데이터를 가져오는 중 오류가 발생했습니다: {error}</p>;
@@ -209,64 +212,22 @@ const FixtureDetail = () => {
             </tr>
           </thead>
           <tbody>
-            {headToHeadData.map((h2h, index) => {
-              const homeScore = h2h.fullTimeScore?.home ?? "-";
-              const awayScore = h2h.fullTimeScore?.away ?? "-";
-
-              // 팀 ID 가져오기
-              const teamAId = fixture.homeTeam.id; // teamA ID (고정된 첫 번째 팀)
-              const teamBId = fixture.awayTeam.id; // teamB ID (고정된 두 번째 팀)
-
-              // 홈/원정 여부 판단
-              const isTeamAHome = h2h.homeTeam.id === teamAId;
-              const isTeamBHome = h2h.homeTeam.id === teamBId;
-
-              // 결과 계산
-              const teamAResult = isTeamAHome
-                ? homeScore > awayScore
-                  ? "W"
-                  : homeScore < awayScore
-                    ? "L"
-                    : "D"
-                : awayScore > homeScore
-                  ? "W"
-                  : awayScore < homeScore
-                    ? "L"
-                    : "D";
-
-              const teamBResult = isTeamBHome
-                ? homeScore > awayScore
-                  ? "W"
-                  : homeScore < awayScore
-                    ? "L"
-                    : "D"
-                : awayScore > homeScore
-                  ? "W"
-                  : awayScore < homeScore
-                    ? "L"
-                    : "D";
-
-              return (
-                <tr key={h2h.fixtureId || `row-${index}`}>
-                  <td style={{border: "1px solid #ddd", padding: "8px"}}>
-                    {new Date(h2h.fixtureDateTime.date).toLocaleDateString("ko-KR")}
-                  </td>
-                  <td style={{border: "1px solid #ddd", padding: "8px"}}>
-                    {/* teamA (고정) */}
-                    {isTeamAHome ? "홈" : "원정"} {homeScore}&nbsp;
-                    <span style={getResultStyle(teamAResult)}>{teamAResult}</span>
-                  </td>
-                  <td style={{border: "1px solid #ddd", padding: "8px"}}>
-                    {/* teamB (고정) */}
-                    {isTeamBHome ? "홈" : "원정"} {awayScore}&nbsp;
-                    <span style={getResultStyle(teamBResult)}>{teamBResult}</span>
-                  </td>
-                  <td style={{border: "1px solid #ddd", padding: "8px"}}>
-                    {h2h.venue?.name || "정보 없음"}
-                  </td>
-                </tr>
-              );
-            })}
+            {headToHeadData.map((h2h, index) => (
+              <tr key={h2h.fixtureId || `row-${index}`}>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {new Date(h2h.fixtureDateTime.date).toLocaleDateString("ko-KR")}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {h2h.fullTimeScore?.home ?? "-"}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {h2h.fullTimeScore?.away ?? "-"}
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                  {h2h.venue?.name || "정보 없음"}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       ) : (
