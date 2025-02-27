@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
 
 import Image from "next/image";
 import styles from "./page.module.css";
@@ -10,8 +12,11 @@ import LeagueRankingContainer from "@/components/leagueRankingContainer";
 import ScheduleContainer from "@/components/scheduleContainer";
 import InPlayContainer from "@/components/inPlayContainer";
 
+let stompClient = null; // WebSocket 클라이언트 전역 변수
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
+  const [message, setMessage] = useState(""); // 인풋 박스 메시지 상태
 
   useEffect(() => {
     const token = localStorage.getItem('jwt-token');
@@ -51,6 +56,41 @@ export default function Home() {
       } else {
         alert('출석체크 중 문제가 발생했습니다. 나중에 다시 시도해주세요.');
       }
+    }
+  };
+
+  useEffect(() => {
+    const socket = new SockJS(`http://localhost:8083/ws-chat`); // WebSocket 주소
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, () => {
+      console.log("WebSocket Connected!");
+
+      // 연결 후 구독 설정
+      stompClient.subscribe("/sub/some-topic", (message) => {
+        console.log("Received message:", message.body);
+      });
+    });
+
+    return () => {
+      if (stompClient) stompClient.disconnect(); // 연결 해제
+    };
+  }, []);
+
+  const sendMessage = () => {
+    if (stompClient && stompClient.connected) {
+      stompClient.send(
+        "/pub/chat/fixture/live/send", // 서버에서 처리할 경로
+        {Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMGQzNjRlZS1iNjNlLTQ2YzktODEyNS1kMWE0YzVhNWQ2OTEiLCJpc3MiOiJtZW1iZXJzaGlwLXNlcnZpY2UiLCJpYXQiOjE3NDA2MzUxMjYsImV4cCI6MTc0MDYzODcyNn0.XuFbzEx-2NdfYUEYrDS9CtPxyrfbeOo_Pp9tF7dTkr4"}, // 헤더
+        JSON.stringify({
+          fixtureId: "616fa82b-f226-4ddf-ac0d-14e993c4dad0",
+          message: message,
+        }) // 메시지 본문
+      );
+      console.log("Sent message:", message);
+      setMessage(""); // 메시지 초기화
+    } else {
+      console.error("WebSocket is not connected.");
     }
   };
 
@@ -158,6 +198,20 @@ export default function Home() {
           Go to nextjs.org →
         </a>
       </footer>
+
+      {/* 인풋 박스 및 전송 버튼 */}
+      <div className={styles.messageBox}>
+        <input
+          type="text"
+          value={message}
+          placeholder="메시지를 입력하세요"
+          onChange={(e) => setMessage(e.target.value)}
+          className={styles.input}
+        />
+        <button onClick={sendMessage} className={styles.sendButton}>
+          전송
+        </button>
+      </div>
     </div>
   );
 }
