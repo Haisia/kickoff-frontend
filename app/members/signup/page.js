@@ -10,6 +10,7 @@ const SignupPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    nickname: '', // 닉네임 추가
   });
 
   const [error, setError] = useState('');
@@ -30,9 +31,10 @@ const SignupPage = () => {
     setError('');
     setSuccess(false);
 
-    const { email, password, confirmPassword } = formData;
+    const { email, password, confirmPassword, nickname } = formData;
 
-    if (!email || !password || !confirmPassword) {
+    // 필드 유효성 검사
+    if (!email || !password || !confirmPassword || !nickname) {
       setError('모든 필드를 입력해주세요.');
       return;
     }
@@ -46,6 +48,7 @@ const SignupPage = () => {
       const response = await axios.post('http://localhost:8080/members/create', {
         email,
         password,
+        nickname, // 닉네임 전달
       });
 
       if (response.status === 200) {
@@ -54,6 +57,7 @@ const SignupPage = () => {
           email: '',
           password: '',
           confirmPassword: '',
+          nickname: '', // 폼 초기화 시 nickname도 초기화
         });
       }
     } catch (error) {
@@ -114,6 +118,16 @@ const SignupPage = () => {
           name="confirmPassword"
           type="password"
           value={formData.confirmPassword}
+          onChange={handleChange}
+          margin="normal"
+          required
+        />
+        <TextField
+          fullWidth
+          label="닉네임" // 닉네임 라벨
+          name="nickname" // 닉네임 이름
+          type="text"
+          value={formData.nickname}
           onChange={handleChange}
           margin="normal"
           required
