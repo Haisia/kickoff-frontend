@@ -17,8 +17,8 @@ const ChatComponent = () => {
   // 기존 채팅 로그를 가져오는 함수
   const fetchChatLogs = async () => {
     try {
-      const response = await axios.post("http://localhost:8083/chat/fixture/live/message/list", {
-        fixtureId: "3dd67f5d-926a-422f-aa94-8463171a9918", // fixtureId를 요청 본문에 전달
+      const response = await axios.post("http://localhost:8083/chat/general/live/message/list", {
+        // fixtureId: "3dd67f5d-926a-422f-aa94-8463171a9918", // fixtureId를 요청 본문에 전달
       });
 
       // 서버 응답에서 메시지를 시간순으로 정렬하여 저장
@@ -41,7 +41,7 @@ const ChatComponent = () => {
       setIsConnected(true); // 연결 상태 업데이트
 
       // WebSocket 연결 후 구독 시작
-      stompClient.subscribe("/sub/some-topic", (message) => {
+      stompClient.subscribe("/sub/general-live-chat", (message) => {
         const receivedMessage = JSON.parse(message.body);
         console.log("Received message:", receivedMessage);
 
@@ -66,11 +66,11 @@ const ChatComponent = () => {
   const sendMessage = () => {
     if (stompClient && stompClient.connected) {
       stompClient.send(
-        "/pub/chat/fixture/live/message/send", // 서버에서 처리할 경로
+        "/pub/chat/general/live/message/send", // 서버에서 처리할 경로
         {},
         JSON.stringify({
           jwtToken: jwtToken,
-          fixtureId: "3dd67f5d-926a-422f-aa94-8463171a9918", // 동일한 fixtureId
+          // fixtureId: "3dd67f5d-926a-422f-aa94-8463171a9918", // 동일한 fixtureId
           message: message,
         })
       );

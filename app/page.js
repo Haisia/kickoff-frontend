@@ -3,21 +3,30 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import styles from "./page.module.css";
 import { Button } from "@mui/material";
+import dynamic from "next/dynamic";
 import LeagueRankingContainer from "@/components/leagueRankingContainer";
 import ScheduleContainer from "@/components/scheduleContainer";
 import InPlayContainer from "@/components/inPlayContainer";
-import ChatComponent from "@/components/chatComponent";
+
+// ChatComponent를 동적 로드로 처리. SSR 비활성화
+const ChatComponent = dynamic(() => import("@/components/chatComponent"), {
+  ssr: false,
+});
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt-token");
-    setIsLoggedIn(!!token);
+    if (typeof window !== "undefined") { // 브라우저 환경인지 확인
+      const token = localStorage.getItem("jwt-token");
+      setIsLoggedIn(!!token);
+    }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("jwt-token");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("jwt-token");
+    }
     setIsLoggedIn(false);
     alert("로그아웃 되었습니다.");
   };
@@ -74,10 +83,9 @@ export default function Home() {
           <Button className={styles.secondary} onClick={handleAttendance}>
             출석체크
           </Button>
-
         </div>
         {/* 채팅 컴포넌트를 이곳에 추가 */}
-        <ChatComponent/>
+        <ChatComponent />
       </main>
       <footer className={styles.footer}>
         {/* 기존 푸터 */}
