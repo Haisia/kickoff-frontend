@@ -1,40 +1,62 @@
 .chatContainer {
-  margin-top: 20px;
-  padding: 10px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   background-color: #f9f9f9;
+}
+
+.chatLog {
+  max-height: calc(15 * 1.5rem); /* 15줄 고정 */
+  overflow-y: auto; /* 초과 시 스크롤 */
   border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.chatMessage {
+  margin-bottom: 0.5rem;
+  word-wrap: break-word; /* 길이가 긴 단어 줄바꿈 */
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: #888;
 }
 
 .messageBox {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .input {
-  flex: 1;
-  padding: 8px;
+  flex-grow: 1;
+  padding: 0.5rem;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 
 .sendButton {
-  padding: 8px 16px;
-  background-color: #0070f3;
-  color: white;
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 .sendButton:disabled {
-  background-color: #aaa;
+  background-color: #ccc;
   cursor: not-allowed;
 }
 
 .connectionStatus {
-  margin-top: 10px;
+  font-size: 0.9rem;
   color: red;
-  font-size: 14px;
+  margin-top: 1rem;
+  text-align: center;
 }
