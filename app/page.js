@@ -38,6 +38,8 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        {/* 채팅 컴포넌트를 이곳에 추가 */}
+        <ChatComponent />
         <InPlayContainer />
         <ScheduleContainer />
         <LeagueRankingContainer />
@@ -49,13 +51,6 @@ export default function Home() {
           height={38}
           priority
         />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
         <div className={styles.ctas}>
           {!isLoggedIn && (
             <>
@@ -84,8 +79,6 @@ export default function Home() {
             출석체크
           </Button>
         </div>
-        {/* 채팅 컴포넌트를 이곳에 추가 */}
-        <ChatComponent />
       </main>
       <footer className={styles.footer}>
         {/* 기존 푸터 */}

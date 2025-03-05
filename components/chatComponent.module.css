@@ -8,7 +8,7 @@
 }
 
 .chatLog {
-  max-height: calc(15 * 1.5rem); /* 15줄 고정 */
+  max-height: calc(10 * 1.5rem); /* 15줄 고정 */
   overflow-y: auto; /* 초과 시 스크롤 */
   border: 1px solid #ddd;
   padding: 0.5rem;
